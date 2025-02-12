@@ -5,7 +5,10 @@ import com.bobocode.util.ExerciseNotCompletedException;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.*;
+
+import static java.util.function.IntUnaryOperator.identity;
 
 /**
  * {@link CrazyLambdas} is an exercise class. Each method returns a functional interface and it should be implemented
@@ -27,7 +30,7 @@ public class CrazyLambdas {
      * @return a string supplier
      */
     public static Supplier<String> helloSupplier() {
-        throw new ExerciseNotCompletedException();
+        return () -> "Hello";
     }
 
     /**
@@ -36,17 +39,19 @@ public class CrazyLambdas {
      * @return a string predicate
      */
     public static Predicate<String> isEmptyPredicate() {
-        throw new ExerciseNotCompletedException();
+
+        return str -> str.isEmpty();
     }
 
     /**
-     * Return a {@link Function} that accepts {@link String} and returns that string repeated n time, where n is passed
+     * Return a {@link Function} that accepts {@link String} and returns that string repeated n time,
+     * where n is passed
      * as function argument
      *
      * @return function that repeats Strings
      */
     public static BiFunction<String, Integer, String> stringMultiplier() {
-        throw new ExerciseNotCompletedException();
+        return (srt,n) -> srt.repeat(n);
     }
 
     /**
@@ -56,19 +61,21 @@ public class CrazyLambdas {
      * @return function that converts adds dollar sign
      */
     public static Function<BigDecimal, String> toDollarStringFunction() {
-        throw new ExerciseNotCompletedException();
+        return valuew -> "$"+valuew;
     }
 
     /**
-     * Receives two parameter that represent a range and returns a {@link Predicate<String>} that verifies if string
-     * length is in the specified range. E.g. min <= length < max
+     * Receives two parameter that represent a range and returns a {@link Predicate<String>}
+     * that verifies if string
+     * length is in the specified range.
+     * E.g. min <= length < max
      *
      * @param min min length
      * @param max max length
      * @return a string predicate
      */
     public static Predicate<String> lengthInRangePredicate(int min, int max) {
-        throw new ExerciseNotCompletedException();
+        return str -> str.length()>=min && str.length()<max;
     }
 
     /**
@@ -77,17 +84,18 @@ public class CrazyLambdas {
      * @return int supplier
      */
     public static IntSupplier randomIntSupplier() {
-        throw new ExerciseNotCompletedException();
+        return () -> ThreadLocalRandom.current().nextInt();
     }
 
 
     /**
-     * Returns an {@link IntUnaryOperator} that receives an int as a bound parameter, and returns a random int
+     * Returns an {@link IntUnaryOperator} that
+     * receives an int as a bound parameter, and returns a random int
      *
      * @return int operation
      */
     public static IntUnaryOperator boundedRandomIntSupplier() {
-        throw new ExerciseNotCompletedException();
+        return (bound) -> ThreadLocalRandom.current().nextInt(bound);
     }
 
     /**
@@ -96,7 +104,7 @@ public class CrazyLambdas {
      * @return square operation
      */
     public static IntUnaryOperator intSquareOperation() {
-        throw new ExerciseNotCompletedException();
+        return x -> x*x;
     }
 
     /**
@@ -105,7 +113,7 @@ public class CrazyLambdas {
      * @return binary sum operation
      */
     public static LongBinaryOperator longSumOperation() {
-        throw new ExerciseNotCompletedException();
+        return (a,b) -> a+b;
     }
 
     /**
@@ -114,7 +122,7 @@ public class CrazyLambdas {
      * @return string to int converter
      */
     public static ToIntFunction<String> stringToIntConverter() {
-        throw new ExerciseNotCompletedException();
+        return str -> Integer.parseInt(str);
     }
 
     /**
@@ -125,7 +133,7 @@ public class CrazyLambdas {
      * @return a function supplier
      */
     public static Supplier<IntUnaryOperator> nMultiplyFunctionSupplier(int n) {
-        throw new ExerciseNotCompletedException();
+       return () -> x -> n*x;
     }
 
     /**
@@ -134,18 +142,23 @@ public class CrazyLambdas {
      * @return function that composes functions with trim() function
      */
     public static UnaryOperator<Function<String, String>> composeWithTrimFunction() {
-        throw new ExerciseNotCompletedException();
+        return stringStringFunction -> stringStringFunction.compose(x->x.trim());
     }
 
     /**
-     * Receives a {@link Runnable} parameter, and returns a {@link Supplier<Thread>}. The thread will be started only
+     * Receives a {@link Runnable} parameter, and returns a {@link Supplier<Thread>}.
+     * The thread will be started only
      * when you call supplier method {@link Supplier#get()}
      *
      * @param runnable the code you want to tun in new thread
      * @return a thread supplier
      */
     public static Supplier<Thread> runningThreadSupplier(Runnable runnable) {
-        throw new ExerciseNotCompletedException();
+    return () -> {
+        var t = new Thread(runnable);
+        t.start();
+        return t;
+    };
     }
 
     /**
@@ -154,41 +167,51 @@ public class CrazyLambdas {
      * @return a runnable consumer
      */
     public static Consumer<Runnable> newThreadRunnableConsumer() {
-        throw new ExerciseNotCompletedException();
+        return runnable -> new Thread(runnable).start();
     }
 
     /**
-     * Returns a {@link Function} that accepts an instance of {@link Runnable} and returns a {@link Supplier} of a
+     * Returns a {@link Function} that accepts an instance of {@link Runnable}
+     * and returns a {@link Supplier} of a
      * started {@link Thread} that is created from a given {@link Runnable}
      *
      * @return a function that transforms runnable into a thread supplier
      */
     public static Function<Runnable, Supplier<Thread>> runnableToThreadSupplierFunction() {
-        throw new ExerciseNotCompletedException();
+        return runnable -> () -> {
+        Thread t = new Thread(runnable);
+        t.start();
+        return t;
+        };
     }
 
     /**
-     * Returns a {@link BiFunction} that has two parameters. First is {@link IntUnaryOperator} which is some integer function.
-     * Second is {@link IntPredicate} which is some integer condition. And the third is {@link IntUnaryOperator} which is
-     * a new composed function that uses provided predicate (second parameter of binary function) to verify its input
+     * Returns a {@link BiFunction} that has two parameters. First is {@link IntUnaryOperator}
+     * which is some integer function.
+     * Second is {@link IntPredicate} which is some integer condition. And the third is {@link IntUnaryOperator}
+     * which is
+     * a new composed function that uses provided predicate (second parameter of binary function)
+     * to verify its input
      * parameter. If predicate returns {@code true} it applies a provided integer function
      * (first parameter of binary function) and returns a result value, otherwise it returns an element itself.
      *
      * @return a binary function that receiver predicate and function and compose them to create a new function
      */
     public static BiFunction<IntUnaryOperator, IntPredicate, IntUnaryOperator> functionToConditionalFunction() {
-        throw new ExerciseNotCompletedException();
+        return (intFunction, condition) -> x -> condition.test(x) ? intFunction.applyAsInt(x) : x;
     }
 
     /**
-     * Returns a {@link BiFunction} which first parameter is a {@link Map} where key is a function name, and value is some
-     * {@link IntUnaryOperator}, and second parameter is a {@link String} which is a function name. If the map contains a
+     * Returns a {@link BiFunction} which first parameter is a {@link Map} where key is a function name, and value is
+     * some
+     * {@link IntUnaryOperator}, and second parameter is a {@link String} which is a function name.
+     * If the map contains a
      * function by a given name then it is returned by high order function otherwise an identity() is returned.
      *
      * @return a high-order function that fetches a function from a function map by a given name or returns identity()
      */
     public static BiFunction<Map<String, IntUnaryOperator>, String, IntUnaryOperator> functionLoader() {
-        throw new ExerciseNotCompletedException();
+        return(functionMap,functionName) -> functionMap.getOrDefault(functionName,identity());
     }
 
     /**
@@ -206,7 +229,7 @@ public class CrazyLambdas {
      * @return a comparator instance
      */
     public static <T, U extends Comparable<? super U>> Comparator<T> comparing(Function<? super T, ? extends U> mapper) {
-        throw new ExerciseNotCompletedException();
+        return (t1, t2) -> mapper.apply(t1).compareTo(mapper.apply(t2));
     }
 
     /**
@@ -226,7 +249,8 @@ public class CrazyLambdas {
      */
     public static <T, U extends Comparable<? super U>> Comparator<T> thenComparing(
             Comparator<? super T> comparator, Function<? super T, ? extends U> mapper) {
-        throw new ExerciseNotCompletedException();
+        Comparator<T> comparatorTyped = (Comparator<T>) comparator;
+        return comparatorTyped.thenComparing(Comparator.comparing(mapper));
     }
 
     /**
@@ -235,7 +259,7 @@ public class CrazyLambdas {
      * @return a supplier instance
      */
     public static Supplier<Supplier<Supplier<String>>> trickyWellDoneSupplier() {
-        throw new ExerciseNotCompletedException();
+        return () -> () -> () -> "WELL DONE!";
     }
 }
 

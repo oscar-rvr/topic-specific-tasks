@@ -6,9 +6,14 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.stream.StreamSupport;
 
 /**
  * {@link CrazyGenerics} is an exercise class. It consists of classes, interfaces and methods that should be updated
@@ -33,8 +38,8 @@ public class CrazyGenerics {
      * @param <T> – value type
      */
     @Data
-    public static class Sourced { // todo: refactor class to introduce type parameter and make value generic
-        private Object value;
+    public static class Sourced<T> { // todo: refactor class to introduce type parameter and make value generic
+        private T value;
         private String source;
     }
 
@@ -47,9 +52,9 @@ public class CrazyGenerics {
     @Data
     public static class Limited<T extends Number> {
         // todo: refactor class to introduce type param bounded by number and make fields generic numbers
-        private final T actual;
-        private final T min;
-        private final T max;
+        private final T actual = null;
+        private final T min = null;
+        private final T max = null;
     }
 
     /**
@@ -61,7 +66,7 @@ public class CrazyGenerics {
      */
     public interface Converter<T, R> { // todo: introduce type parameters
         // todo: add convert method
-        R convert(T input);
+        R convert(T obj);
     }
 
     /**
@@ -71,7 +76,7 @@ public class CrazyGenerics {
      *
      * @param <T> – value type
      */
-    public static class MaxHolder<T extends Comparable<T>> { // todo: refactor class to make it generic
+    public static class MaxHolder<T extends Comparable<? super T>> { // todo: refactor class to make it generic
         private T max;
 
         public MaxHolder(T max) {
@@ -89,7 +94,7 @@ public class CrazyGenerics {
             }
         }
 
-        public Object getMax() {
+        public T getMax() {
             return max;
         }
     }
@@ -100,7 +105,7 @@ public class CrazyGenerics {
      *
      * @param <T> – the type of objects that can be processed
      */
-    interface StrictProcessor<T extends Serializable & Comparable<T>> { // todo: make it generic
+    interface StrictProcessor<T extends Serializable & Comparable<? super T>> { // todo: make it generic
         void process(T obj);
     }
 
@@ -137,9 +142,9 @@ public class CrazyGenerics {
      *
      * @param <E> a type of collection elements
      */
-    interface ComparableCollection<E> extends Collection<E>,Comparable<ComparableCollection<?>>{ // todo: refactor it to make generic and provide a default impl of compareTo
+    interface ComparableCollection<E> extends Collection<E>,Comparable<Collection<?>>{ // todo: refactor it to make generic and provide a default impl of compareTo
         //@Override
-        default int compareTo(ComparableCollection<?> other){
+        default int compareTo(Collection<?> other){
             return Integer.compare(this.size(), other.size());
         }
     }
@@ -155,7 +160,7 @@ public class CrazyGenerics {
          *
          * @param list
          */
-        public static void print(List<Integer> list) {
+        public static <T> void print(List<?> list) {
             // todo: refactor it so the list of any type can be printed, not only integers
             list.forEach(element -> System.out.println(" – " + element));
         }
@@ -168,12 +173,15 @@ public class CrazyGenerics {
          * @param entities provided collection of entities
          * @return true if at least one of the elements has null id
          */
-        public static boolean hasNewEntities(Collection<BaseEntity> entities) {
-            throw new ExerciseNotCompletedException(); // todo: refactor parameter and implement method
+
+        public static boolean hasNewEntities(Collection<? extends BaseEntity> entities) {
+return  entities.stream()
+        .anyMatch(e->e.getUuid()==null);
         }
 
         /**
-         * Util method that checks if a provided collection of entities is valid. An entity is any subclass of
+         * Util method that checks if a provided collection of entities is valid.
+         * An entity is any subclass of
          * a {@link BaseEntity} A validation criteria can be different for different cases, so it is passed
          * as second parameter.
          *
@@ -181,8 +189,10 @@ public class CrazyGenerics {
          * @param validationPredicate criteria for validation
          * @return true if all entities fit validation criteria
          */
-        public static boolean isValidCollection() {
-            throw new ExerciseNotCompletedException(); // todo: add method parameters and implement the logic
+        public static  boolean isValidCollection(Collection<? extends BaseEntity> entities,
+                Predicate<? super BaseEntity> validationPredicate) {
+            return entities.stream()
+                    .allMatch(validationPredicate);
         }
 
         /**
@@ -195,8 +205,14 @@ public class CrazyGenerics {
          * @param <T>          entity type
          * @return true if entities list contains target entity more than once
          */
-        public static boolean hasDuplicates() {
-            throw new ExerciseNotCompletedException(); // todo: update method signature and implement it
+        public static <T extends BaseEntity> boolean hasDuplicates(List<T> entities, T targetEntity) {
+            if(entities == null || targetEntity == null){
+                return false;
+            }
+            return entities.stream()
+                    .filter(entity -> entity.getUuid().equals(targetEntity.getUuid()))
+                    .count() > 1;
+
         }
 
         /**
@@ -209,6 +225,12 @@ public class CrazyGenerics {
          * @return optional max value
          */
         // todo: create a method and implement its logic manually without using util method from JDK
+        public static <T extends BaseEntity> Optional<T> findMax(Iterable<T> elements, Comparator<? super T> comparator) {
+            return StreamSupport
+                    .stream(elements.spliterator(),false)
+                    .max(comparator);
+        }
+
 
         /**
          * findMostRecentlyCreatedEntity is a generic util method that accepts a collection of entities and returns the
@@ -224,6 +246,11 @@ public class CrazyGenerics {
          */
         // todo: create a method according to JavaDoc and implement it using previous method
 
+        public static <T extends BaseEntity> T findMostRecentlyCreatedEntity(Collection<T> entities) {
+            return findMax(entities, CREATED_ON_COMPARATOR)
+                    .orElseThrow();
+        }
+
         /**
          * An util method that allows to swap two elements of any list. It changes the list so the element with the index
          * i will be located on index j, and the element with index j, will be located on the index i.
@@ -236,7 +263,15 @@ public class CrazyGenerics {
         public static void swap(List<?> elements, int i, int j) {
             Objects.checkIndex(i, elements.size());
             Objects.checkIndex(j, elements.size());
-            throw new ExerciseNotCompletedException(); // todo: complete method implementation 
+            swaper(elements, i, j);
+
+        }
+
+        private static <T> void swaper(List<T> elements, int i, int j){
+            T temp = elements.get(i);
+
+            elements.set(i,elements.get(j));
+            elements.set(j,temp);
         }
 
     }

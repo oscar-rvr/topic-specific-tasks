@@ -1,6 +1,9 @@
 package com.bobocode.basics;
 
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * {@link HeterogeneousMaxHolder} is a multi-type container that holds maximum values per each type. It's kind of a
@@ -15,6 +18,8 @@ import java.util.Map;
  * @author Taras Boychuk
  */
 public class HeterogeneousMaxHolder {
+    private Map<Class<?>, Object> maxValues = new HashMap<>();
+
 
     /**
      * A method put stores a provided value by its type, if the value is greater than the current maximum. In other words, the logic
@@ -31,9 +36,17 @@ public class HeterogeneousMaxHolder {
      * @return a smaller value among the provided value and the current maximum
      */
     // todo: implement a method according to javadoc
-
+    public <T extends Comparable<? super T>> T put(Class<T> key,T value){
+        T currentMax = (T) maxValues.get(key);
+        if(currentMax==null || value.compareTo(currentMax)>0) {
+            maxValues.put(key, value);
+            return currentMax;
+        }
+        return value;
+    }
     /**
-     * An overloaded method put implements the same logic using a custom comparator. A given comparator is wrapped with
+     * An overloaded method put implements the same logic using a custom comparator.
+     * A given comparator is wrapped with
      * a null-safe comparator, considering null smaller than any non-null object.
      * <p>
      * All arguments must not be null.
@@ -45,7 +58,18 @@ public class HeterogeneousMaxHolder {
      * @return a smaller value among the provided value and the current maximum
      */
     // todo: implement a method according to javadoc
+    public <T> T put(Class<T> key,T value, Comparator<? super T> comparator){
+        Objects.requireNonNull(key);
+        Objects.requireNonNull(value);
+        Objects.requireNonNull(comparator);
 
+        T currentMax = (T) maxValues.get(key);
+        if(currentMax == null || comparator.compare(value,currentMax)>0){
+            maxValues.put(key,value);
+            return currentMax;
+        }
+        return value;
+    }
     /**
      * A method getMax returns a max value by the given type. If no value is stored by this type, then it returns null.
      *
@@ -54,4 +78,7 @@ public class HeterogeneousMaxHolder {
      * @return current max value or null
      */
     // todo: implement a method according to javadoc
+    public<T> T getMax(Class<T> key){
+        return (T) maxValues.get(key);
+    }
 }

@@ -30,4 +30,11 @@ public class FunctionMap<T, R> {
             throw new InvalidFunctionNameException(name);
         }
     }
+
+    public void put(String name, Function<T, R> function) {
+        if (functionMap.putIfAbsent(name, function) != null) {
+            throw new IllegalArgumentException("Function with name '" + name + "' already exists.");
+        }
+    }
+
 }
