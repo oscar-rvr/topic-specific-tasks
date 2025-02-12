@@ -24,6 +24,7 @@ class RandomFieldComparatorTest {
     @Order(1)
     @DisplayName("Constructor throws an exception when parameter is null")
     void classDoesNotApplyNullInConstructor() {
+
         assertThrows(NullPointerException.class, () -> new RandomFieldComparator<>(null));
     }
 

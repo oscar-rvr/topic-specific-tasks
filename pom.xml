@@ -26,6 +26,7 @@
         <module>java-fundamentals-util</module>
         <module>lesson-demo</module>
         <module>InfiniteIterator</module>
+        <module>ZippingIterator</module>
     </modules>
 
     <dependencies>
